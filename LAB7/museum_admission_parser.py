@@ -1,25 +1,57 @@
 def format_visitor_name(name):
     """
     Formats a full name as 'Surname, Given names' for the ticket.
-    Assumes name contains at least one word.
+    Hardened against edge cases: handles None, non-strings, empty strings,
+    single names, and extra whitespace without crashing.
     """
-    parts = name.split()
+    if not name or not isinstance(name, str):
+        return ""
+    parts = name.strip().split()
+    if not parts:
+        return ""
+    if len(parts) == 1:
+        return parts[0].title()
     return parts[-1].title() + ', ' + ' '.join(parts[:-1]).title()
 
 def parse_group_ages(text):
     """
     Parses space-separated ages into a list of ints.
-    Assumes every value is a whole number.
+    Hardened against edge cases: handles None, non-strings, non-integers,
+    empty inputs, and negative values without crashing.
     """
-    return [int(age) for age in text.split()]
+    if not text or not isinstance(text, str):
+        return []
+    ages = []
+    for token in text.strip().split():
+        try:
+            val = int(token)
+            if val >= 0:
+                ages.append(val)
+        except ValueError:
+            continue
+    return ages
 
 def parse_visit_date(text):
     """
     Parses a YYYY-MM-DD date into a (year, month, day) tuple.
-    Assumes text is a valid date with two dashes.
+    Hardened against edge cases: handles None, non-strings, missing or extra parts,
+    invalid integers, and out-of-range dates without crashing.
+    Returns None if the date format is invalid.
     """
-    year, month, day = text.strip().split('-')
-    return int(year), int(month), int(day)
+    if not text or not isinstance(text, str):
+        return None
+    parts = text.strip().split('-')
+    if len(parts) != 3:
+        return None
+    try:
+        year = int(parts[0])
+        month = int(parts[1])
+        day = int(parts[2])
+        if year > 0 and 1 <= month <= 12 and 1 <= day <= 31:
+            return (year, month, day)
+        return None
+    except ValueError:
+        return None
 
 def main():
     print("==== Running format_visitor_name ====")
